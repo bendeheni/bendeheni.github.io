@@ -1,65 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Analytics Dashboard</title>
-    
+    <title>Repülőjegy Elemző Dashboard</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
+    
 </head>
+
 <body>
 
     <div class="dashboard-container">
-        
+
         <header>
             <div class="logo-section">
                 <div class="plane-icon"><i class="ri-plane-fill"></i></div>
                 <div>
-                    <h1>Flight Analytics</h1>
-                    <p class="subtitle">Analysis of Economy Class Domestic Flight Prices Departing from Delhi, India</p>
-
+                    <h1>Repülőjegy Elemző   </h1>
+                    <p class="subtitle">Delhi-ből induló belföldi turista osztályú járatok árelemzése</p>
                 </div>
             </div>
             <div class="last-update">
-                <i class="ri-database-2-line"></i> <span id="data-count">0</span> flights analyzed
+                <i class="ri-database-2-line"></i> <span id="data-count">0</span> járat elemezve
             </div>
         </header>
+
+        <div class="project-overview glass-panel">
+            <h2><i class="ri-information-line"></i> A Projektről</h2>
+            <p>
+                Ez az interaktív dashboard az indiai belföldi légi közlekedés árazási dinamikáját vizsgálja valós adatok
+                alapján.
+                A cél feltárni azokat a rejtett összefüggéseket, amelyek a foglalási időablak, a légitársaságok
+                típusai,
+                a napszakok és az átszállások száma között húzódnak. Az alábbi vizualizációk segítenek megérteni,
+                mikor és hogyan érdemes repjegyet vásárolni a legköltséghatékonyabb utazás érdekében.
+            </p>
+        </div>
 
         <div class="stats-row">
             <div class="stat-card">
                 <div class="stat-icon"><i class="ri-flight-takeoff-line"></i></div>
                 <div class="stat-info">
-                    <h3>Total Flights</h3>
+                    <h3>Összes Járat</h3>
                     <p id="stat-total">0</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="ri-money-dollar-circle-line"></i></div>
                 <div class="stat-info">
-                    <h3>Average Price</h3>
+                    <h3>Átlagár</h3>
                     <p id="stat-avg">₹0</p>
                 </div>
             </div>
             <div class="stat-card success">
                 <div class="stat-icon"><i class="ri-arrow-down-circle-line"></i></div>
                 <div class="stat-info">
-                    <h3>Minimum Price</h3>
+                    <h3>Minimum Ár</h3>
                     <p id="stat-min">₹0</p>
                 </div>
             </div>
             <div class="stat-card warning">
                 <div class="stat-icon"><i class="ri-arrow-up-circle-line"></i></div>
                 <div class="stat-info">
-                    <h3>Maximum Price</h3>
+                    <h3>Maximum Ár</h3>
                     <p id="stat-max">₹0</p>
                 </div>
             </div>
@@ -67,53 +80,57 @@
 
         <div class="filters-panel glass-panel">
             <div class="filter-header">
-                <h3><i class="ri-equalizer-line"></i> Interactive Filters</h3>
+                <h3><i class="ri-equalizer-line"></i> Interaktív Szűrők</h3>
                 <button onclick="resetFilters()" class="reset-btn">
-                    <i class="ri-refresh-line"></i> Reset All
+                    <i class="ri-refresh-line"></i> Visszaállítás
                 </button>
             </div>
             <div class="filters-grid">
                 <div class="filter-group">
-                    <label>Airline</label>
+                    <label>Légitársaság</label>
                     <select id="filter-airline" onchange="updateDashboard()">
-                        <option value="all">All Airlines</option>
+                        <option value="all">Összes Légitársaság</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Departure Time</label>
+                    <label>Indulási Idő</label>
                     <select id="filter-time" onchange="updateDashboard()">
-                        <option value="all">Any Time</option>
+                        <option value="all">Bármikor</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Stops</label>
+                    <label>Átszállások</label>
                     <select id="filter-stops" onchange="updateDashboard()">
-                        <option value="all">All</option>
+                        <option value="all">Mindegy</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Days Before Departure: <span id="days-val">50</span></label>
+                    <label>Napok indulásig: <span id="days-val">50</span></label>
                     <input type="range" id="filter-days" min="1" max="50" value="50" oninput="updateDashboard()">
                 </div>
             </div>
         </div>
 
         <div class="insights-panel glass-panel">
-            <h3><i class="ri-flashlight-line"></i> Key Insights</h3>
+            <h3><i class="ri-flashlight-line"></i> Főbb Felismerések</h3>
             <ul id="insights-list">
-                <li><i class="ri-loader-4-line spin"></i> Loading data...</li>
+                <li><i class="ri-loader-4-line spin"></i> Adatok betöltése...</li>
             </ul>
         </div>
 
         <div class="charts-grid">
-            
+
             <div class="chart-card glass-panel">
                 <div class="card-header">
                     <div>
-                        <h3><i class="ri-calendar-event-line"></i> Optimal Booking Window</h3>
-                        <p class="chart-description">How booking lead time affects ticket prices</p>
+                        <h3><i class="ri-calendar-event-line"></i> Optimális Foglalási Ablak</h3>
+                        <p class="chart-description">
+                            Hogyan befolyásolja a foglalás időzítése a jegyárakat? <br>
+                            <strong>Következtetés:</strong> Az árak az indulás előtti utolsó 10-15 napban
+                            exponenciálisan emelkednek, míg a korai foglalás stabilabb árakat biztosít.
+                        </p>
                     </div>
-                    <span class="info-badge">Scatter Plot</span>
+                    <span class="info-badge">Pontdiagram</span>
                 </div>
                 <div id="viz-days" class="viz-container"></div>
             </div>
@@ -121,10 +138,14 @@
             <div class="chart-card glass-panel">
                 <div class="card-header">
                     <div>
-                        <h3><i class="ri-bar-chart-grouped-line"></i> Airline Price Comparison</h3>
-                        <p class="chart-description">Average prices by carrier</p>
+                        <h3><i class="ri-bar-chart-grouped-line"></i> Légitársaságok Összehasonlítása</h3>
+                        <p class="chart-description">
+                            Átlagos jegyárak szolgáltatónként. <br>
+                            <strong>Következtetés:</strong> Jelentős árkülönbség figyelhető meg a fapados és a prémium
+                            légitársaságok (pl. Vistara, Air India) között.
+                        </p>
                     </div>
-                    <span class="info-badge">Comparison</span>
+                    <span class="info-badge">Összehasonlítás</span>
                 </div>
                 <div id="viz-airline" class="viz-container"></div>
             </div>
@@ -132,10 +153,14 @@
             <div class="chart-card glass-panel">
                 <div class="card-header">
                     <div>
-                        <h3><i class="ri-git-merge-line"></i> Direct vs Connecting Flights</h3>
-                        <p class="chart-description">Price distribution by stops</p>
+                        <h3><i class="ri-git-merge-line"></i> Közvetlen vs. Átszállásos</h3>
+                        <p class="chart-description">
+                            Áreloszlás az átszállások száma alapján. <br>
+                            <strong>Következtetés:</strong> Az átszállásos járatok gyakran drágábbak és nagyobb szórást
+                            mutatnak árban, mint a közvetlen összeköttetések.
+                        </p>
                     </div>
-                    <span class="info-badge">Distribution</span>
+                    <span class="info-badge">Eloszlás</span>
                 </div>
                 <div id="viz-stops" class="viz-container"></div>
             </div>
@@ -143,10 +168,14 @@
             <div class="chart-card glass-panel">
                 <div class="card-header">
                     <div>
-                        <h3><i class="ri-grid-line"></i> Route Pricing Matrix</h3>
-                        <p class="chart-description">Average prices across routes and carriers</p>
+                        <h3><i class="ri-grid-line"></i> Útvonal Ármátrix</h3>
+                        <p class="chart-description">
+                            Hőtérkép az átlagárakról útvonalak és légitársaságok szerint. <br>
+                            <strong>Következtetés:</strong> Bizonyos népszerű útvonalakon a verseny lenyomja az árakat,
+                            míg ritkább desztinációknál magasabb az átlagköltség.
+                        </p>
                     </div>
-                    <span class="info-badge">Heatmap</span>
+                    <span class="info-badge">Hőtérkép</span>
                 </div>
                 <div id="viz-heatmap" class="viz-container"></div>
             </div>
@@ -154,10 +183,14 @@
             <div class="chart-card glass-panel">
                 <div class="card-header">
                     <div>
-                        <h3><i class="ri-time-line"></i> Time of Day Pricing</h3>
-                        <p class="chart-description">Price trends by departure time</p>
+                        <h3><i class="ri-time-line"></i> Napszakok Árazása</h3>
+                        <p class="chart-description">
+                            Ártrendek az indulási idő függvényében. <br>
+                            <strong>Következtetés:</strong> Az éjszakai és késő éjszakai járatok gyakran kedvezőbb
+                            árúak, míg a reggeli és esti csúcsidő drágábbak.
+                        </p>
                     </div>
-                    <span class="info-badge">Timeline</span>
+                    <span class="info-badge">Idővonal</span>
                 </div>
                 <div id="viz-time" class="viz-container"></div>
             </div>
@@ -165,10 +198,14 @@
             <div class="chart-card glass-panel">
                 <div class="card-header">
                     <div>
-                        <h3><i class="ri-timer-flash-line"></i> Duration Impact</h3>
-                        <p class="chart-description">Flight duration vs pricing correlation</p>
+                        <h3><i class="ri-timer-flash-line"></i> Időtartam Hatása</h3>
+                        <p class="chart-description">
+                            Korreláció a repülési idő és az ár között. <br>
+                            <strong>Következtetés:</strong> A hosszabb repülési idő (különösen átszállásokkal
+                            kombinálva) általában magasabb jegyárat eredményez.
+                        </p>
                     </div>
-                    <span class="info-badge">Correlation</span>
+                    <span class="info-badge">Korreláció</span>
                 </div>
                 <div id="viz-duration" class="viz-container"></div>
             </div>
@@ -178,15 +215,16 @@
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4><i class="ri-file-list-3-line"></i> About This Project</h4>
-                    <p>This interactive dashboard analyzes flight records from Indian domestic airlines to uncover pricing patterns and booking insights.</p>
+                    <h4><i class="ri-file-list-3-line"></i> A projektről:</h4>
+                    <p>Ez az interaktív műszerfal indiai légitársaságok adatait elemzi, hogy feltárja az árazási
+                        mintákat és foglalási betekintést nyújtson - Készítette: Bende Henrietta.</p>
                 </div>
                 <div class="footer-section">
-                    <h4><i class="ri-tools-line"></i> Technologies Used</h4>
-                    <p>Vega-Lite •  HTML5/CSS3 • JavaScript ES6</p>
+                    <h4><i class="ri-tools-line"></i> Technológiák</h4>
+                    <p>Vega-Lite • HTML5/CSS3 • JavaScript ES6</p>
                 </div>
                 <div class="footer-section">
-                    <h4><i class="ri-database-2-line"></i> Data Source</h4>
+                    <h4><i class="ri-database-2-line"></i> Adatforrás</h4>
                     <p>Indian Aviation Dataset (2022)</p>
                 </div>
             </div>
@@ -197,11 +235,12 @@
     <div id="loader" class="loader-overlay">
         <div class="upload-container">
             <div class="spinner"></div>
-            <h2>System Initializing...</h2>
-            <p>Loading and processing data...</p>
+            <h2>Rendszer Indítása...</h2>
+            <p>Adatok betöltése és feldolgozása...</p>
         </div>
     </div>
 
     <script src="app.js"></script>
 </body>
+
 </html>

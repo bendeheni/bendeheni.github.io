@@ -145,6 +145,25 @@ h1 {
     white-space: nowrap;
 }
 
+.project-overview {
+    padding: 24px;
+    margin-bottom: 30px;
+}
+.project-overview h2 {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.project-overview p {
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+
 .stats-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -352,6 +371,12 @@ select option {
 .chart-description {
     font-size: 0.85rem;
     color: var(--text-muted);
+    margin-top: 5px;
+}
+
+.chart-description strong {
+    color: var(--warning);
+    display: block;
     margin-top: 5px;
 }
 
