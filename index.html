@@ -3,621 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Analytics Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vega/5.22.1/vega.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vega-lite/5.6.0/vega-lite.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vega-embed/6.21.0/vega-embed.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    <title>Flight Analytics Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        /* Animated gradient background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.3), transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(59, 130, 246, 0.2), transparent 50%);
-            z-index: 0;
-            animation: gradientShift 15s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.1); }
-        }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 80px 40px;
-        }
-
-        /* Header */
-        header {
-            text-align: center;
-            margin-bottom: 80px;
-            animation: fadeInDown 1s ease-out;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        h1 {
-            font-size: 4rem;
-            font-weight: 800;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -2px;
-            line-height: 1.1;
-        }
-
-        .subtitle {
-            font-size: 1.25rem;
-            color: #a0a0a0;
-            font-weight: 400;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        /* Chart Cards */
-        .chart-section {
-            background: rgba(20, 20, 20, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 48px;
-            margin-bottom: 48px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: fadeInUp 0.8s ease-out backwards;
-        }
-
-        .chart-section:nth-child(2) { animation-delay: 0.1s; }
-        .chart-section:nth-child(3) { animation-delay: 0.2s; }
-        .chart-section:nth-child(4) { animation-delay: 0.3s; }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .chart-section:hover {
-            transform: translateY(-8px);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-        }
-
-        .chart-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .chart-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            flex-shrink: 0;
-        }
-
-        .chart-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-        }
-
-        .chart-description {
-            color: #b0b0b0;
-            font-size: 1rem;
-            line-height: 1.7;
-            margin-bottom: 32px;
-            font-weight: 400;
-        }
-
-        .chart-container {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            padding: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        #chart1, #chart2, #chart3 {
-            width: 100%;
-        }
-
-        /* Vega-Lite customization */
-        :global(.vega-embed) {
-            padding: 0 !important;
-        }
-
-        :global(.vega-actions) {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-radius: 8px !important;
-        }
-
-        :global(.vega-actions a) {
-            color: #ffffff !important;
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .container {
-                padding: 60px 32px;
-            }
-
-            h1 {
-                font-size: 3rem;
-            }
-
-            .chart-section {
-                padding: 36px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 40px 20px;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            .subtitle {
-                font-size: 1rem;
-            }
-
-            .chart-section {
-                padding: 24px;
-                margin-bottom: 32px;
-            }
-
-            .chart-title {
-                font-size: 1.5rem;
-            }
-
-            .chart-container {
-                padding: 20px;
-            }
-
-            .chart-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
-            }
-        }
-
-        /* Floating elements */
-        .floating-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.3;
-            z-index: 0;
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .orb-1 {
-            width: 400px;
-            height: 400px;
-            background: #667eea;
-            top: 10%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .orb-2 {
-            width: 300px;
-            height: 300px;
-            background: #764ba2;
-            bottom: 20%;
-            right: 10%;
-            animation-delay: 7s;
-        }
-
-        .orb-3 {
-            width: 350px;
-            height: 350px;
-            background: #f093fb;
-            top: 50%;
-            right: 20%;
-            animation-delay: 14s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="floating-orb orb-1"></div>
-    <div class="floating-orb orb-2"></div>
-    <div class="floating-orb orb-3"></div>
 
-    <div class="container">
+    <div class="dashboard-container">
+        
         <header>
-            <h1>Personal Analytics Dashboard</h1>
-            <p class="subtitle">Explore personal insights through beautifully crafted, interactive charts</p>
+            <div class="logo-section">
+                <div class="plane-icon"><i class="ri-plane-fill"></i></div>
+                <div>
+                    <h1>Flight Analytics</h1>
+                    <p class="subtitle">Analysis of Economy Class Domestic Flight Prices Departing from Delhi, India</p>
+
+                </div>
+            </div>
+            <div class="last-update">
+                <i class="ri-database-2-line"></i> <span id="data-count">0</span> flights analyzed
+            </div>
         </header>
 
-        <!-- Bar Chart Section -->
-        <div class="chart-section">
-            <div class="chart-header">
-                <div class="chart-icon">📊</div>
-                <h2 class="chart-title">Academic Performance</h2>
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="ri-flight-takeoff-line"></i></div>
+                <div class="stat-info">
+                    <h3>Total Flights</h3>
+                    <p id="stat-total">0</p>
+                </div>
             </div>
-            <p class="chart-description">
-                First semester grades from first year. Each bar represents a different subject, 
-                showing performance on a 10-point scale. Hover over bars for detailed information.
-            </p>
-            <div class="chart-container">
-                <div id="chart1"></div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="ri-money-dollar-circle-line"></i></div>
+                <div class="stat-info">
+                    <h3>Average Price</h3>
+                    <p id="stat-avg">₹0</p>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon"><i class="ri-arrow-down-circle-line"></i></div>
+                <div class="stat-info">
+                    <h3>Minimum Price</h3>
+                    <p id="stat-min">₹0</p>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon"><i class="ri-arrow-up-circle-line"></i></div>
+                <div class="stat-info">
+                    <h3>Maximum Price</h3>
+                    <p id="stat-max">₹0</p>
+                </div>
             </div>
         </div>
 
-        <!-- Line Chart Section -->
-        <div class="chart-section">
-            <div class="chart-header">
-                <div class="chart-icon">👟</div>
-                <h2 class="chart-title">Activity Tracker</h2>
+        <div class="filters-panel glass-panel">
+            <div class="filter-header">
+                <h3><i class="ri-equalizer-line"></i> Interactive Filters</h3>
+                <button onclick="resetFilters()" class="reset-btn">
+                    <i class="ri-refresh-line"></i> Reset All
+                </button>
             </div>
-            <p class="chart-description">
-                Average daily steps per month throughout 2024. Track physical activity patterns 
-                and seasonal variations in walking habits across the entire year.
-            </p>
-            <div class="chart-container">
-                <div id="chart2"></div>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Airline</label>
+                    <select id="filter-airline" onchange="updateDashboard()">
+                        <option value="all">All Airlines</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Departure Time</label>
+                    <select id="filter-time" onchange="updateDashboard()">
+                        <option value="all">Any Time</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Stops</label>
+                    <select id="filter-stops" onchange="updateDashboard()">
+                        <option value="all">All</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Days Before Departure: <span id="days-val">50</span></label>
+                    <input type="range" id="filter-days" min="1" max="50" value="50" oninput="updateDashboard()">
+                </div>
             </div>
         </div>
 
-        <!-- Scatter Plot Section -->
-        <div class="chart-section">
-            <div class="chart-header">
-                <div class="chart-icon">😴</div>
-                <h2 class="chart-title">Sleep & Wellbeing</h2>
+        <div class="insights-panel glass-panel">
+            <h3><i class="ri-flashlight-line"></i> Key Insights</h3>
+            <ul id="insights-list">
+                <li><i class="ri-loader-4-line spin"></i> Loading data...</li>
+            </ul>
+        </div>
+
+        <div class="charts-grid">
+            
+            <div class="chart-card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3><i class="ri-calendar-event-line"></i> Optimal Booking Window</h3>
+                        <p class="chart-description">How booking lead time affects ticket prices</p>
+                    </div>
+                    <span class="info-badge">Scatter Plot</span>
+                </div>
+                <div id="viz-days" class="viz-container"></div>
             </div>
-            <p class="chart-description">
-                Correlation between sleep hours and mood levels. Each point represents a day, 
-                revealing the relationship between rest quality and overall emotional state.
-            </p>
-            <div class="chart-container">
-                <div id="chart3"></div>
+
+            <div class="chart-card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3><i class="ri-bar-chart-grouped-line"></i> Airline Price Comparison</h3>
+                        <p class="chart-description">Average prices by carrier</p>
+                    </div>
+                    <span class="info-badge">Comparison</span>
+                </div>
+                <div id="viz-airline" class="viz-container"></div>
             </div>
+
+            <div class="chart-card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3><i class="ri-git-merge-line"></i> Direct vs Connecting Flights</h3>
+                        <p class="chart-description">Price distribution by stops</p>
+                    </div>
+                    <span class="info-badge">Distribution</span>
+                </div>
+                <div id="viz-stops" class="viz-container"></div>
+            </div>
+
+            <div class="chart-card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3><i class="ri-grid-line"></i> Route Pricing Matrix</h3>
+                        <p class="chart-description">Average prices across routes and carriers</p>
+                    </div>
+                    <span class="info-badge">Heatmap</span>
+                </div>
+                <div id="viz-heatmap" class="viz-container"></div>
+            </div>
+
+            <div class="chart-card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3><i class="ri-time-line"></i> Time of Day Pricing</h3>
+                        <p class="chart-description">Price trends by departure time</p>
+                    </div>
+                    <span class="info-badge">Timeline</span>
+                </div>
+                <div id="viz-time" class="viz-container"></div>
+            </div>
+
+            <div class="chart-card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3><i class="ri-timer-flash-line"></i> Duration Impact</h3>
+                        <p class="chart-description">Flight duration vs pricing correlation</p>
+                    </div>
+                    <span class="info-badge">Correlation</span>
+                </div>
+                <div id="viz-duration" class="viz-container"></div>
+            </div>
+
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4><i class="ri-file-list-3-line"></i> About This Project</h4>
+                    <p>This interactive dashboard analyzes flight records from Indian domestic airlines to uncover pricing patterns and booking insights.</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="ri-tools-line"></i> Technologies Used</h4>
+                    <p>Vega-Lite •  HTML5/CSS3 • JavaScript ES6</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="ri-database-2-line"></i> Data Source</h4>
+                    <p>Indian Aviation Dataset (2022)</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <div id="loader" class="loader-overlay">
+        <div class="upload-container">
+            <div class="spinner"></div>
+            <h2>System Initializing...</h2>
+            <p>Loading and processing data...</p>
         </div>
     </div>
 
-    <script>
-        // Enhanced Bar Chart with dark theme
-        const barChartSpec = {
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "width": "container",
-            "height": 450,
-            "background": "transparent",
-            "data": {
-                "values": [
-                    {"subject": "Microeconomics", "grade": 7, "maxGrade": 10},
-                    {"subject": "Marketing", "grade": 8, "maxGrade": 10},
-                    {"subject": "Management", "grade": 7, "maxGrade": 10},
-                    {"subject": "Mathematics", "grade": 7, "maxGrade": 10},
-                    {"subject": "European Economics", "grade": 9, "maxGrade": 10},
-                    {"subject": "Fundamentals of Services", "grade": 8, "maxGrade": 10},
-                    {"subject": "Business Communication", "grade": 9, "maxGrade": 10}
-                ]
-            },
-            "mark": {
-                "type": "bar",
-                "cornerRadiusEnd": 8,
-                "cursor": "pointer"
-            },
-            "encoding": {
-                "x": {
-                    "field": "subject",
-                    "type": "nominal",
-                    "axis": {
-                        "title": "Subjects",
-                        "labelAngle": -45,
-                        "labelFontSize": 18,
-                        "labelColor": "#ffffff",
-                        "titleColor": "#ffffff",
-                        "titleFontSize": 22,
-                        "titleFontWeight": 700,
-                        "domainColor": "#444444",
-                        "tickColor": "#444444",
-                        "grid": false,
-                        "labelPadding": 10
-                    },
-                    "sort": {"field": "grade", "order": "descending"}
-                },
-                "y": {
-                    "field": "grade",
-                    "type": "quantitative",
-                    "axis": {
-                        "title": "Grades",
-                        "labelFontSize": 18,
-                        "labelColor": "#ffffff",
-                        "titleColor": "#ffffff",
-                        "titleFontSize": 22,
-                        "titleFontWeight": 700,
-                        "domainColor": "#444444",
-                        "tickColor": "#444444",
-                        "gridColor": "#333333",
-                        "gridOpacity": 0.3
-                    },
-                    "scale": {"domain": [0, 10]}
-                },
-                "color": {
-                    "field": "grade",
-                    "type": "quantitative",
-                    "scale": {
-                        "range": ["#60a5fa", "#8b5cf6", "#ec4899", "#f472b6"]
-                    },
-                    "legend": null
-                },
-                "tooltip": [
-                    {"field": "subject", "type": "nominal", "title": "subject"},
-                    {"field": "grade", "type": "quantitative", "title": "grade"}
-                ]
-            }
-        };
-
-        // Enhanced Line Chart
-        const lineChartSpec = {
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "width": "container",
-            "height": 450,
-            "background": "transparent",
-            "data": {
-                "values": [
-                    {"month": "January", "steps": 2354},
-                    {"month": "February", "steps": 2752},
-                    {"month": "March", "steps": 3251},
-                    {"month": "April", "steps": 2795},
-                    {"month": "May", "steps": 3709},
-                    {"month": "June", "steps": 2736},
-                    {"month": "July", "steps": 5569},
-                    {"month": "August", "steps": 4137},
-                    {"month": "September", "steps": 2465},
-                    {"month": "October", "steps": 5059},
-                    {"month": "November", "steps": 4696},
-                    {"month": "December", "steps": 3731}
-                ]
-            },
-            "layer": [
-                {
-                    "mark": {
-                        "type": "area",
-                        "line": true,
-                        "opacity": 0.3,
-                        "color": {
-                            "gradient": "linear",
-                            "stops": [
-                                {"offset": 0, "color": "#06b6d4"},
-                                {"offset": 1, "color": "transparent"}
-                            ]
-                        }
-                    },
-                    "encoding": {
-                        "x": {
-                            "field": "month",
-                            "type": "ordinal",
-                            "sort": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-                            "axis": {
-                                "title": "Months",
-                                "labelFontSize": 18,
-                                "labelColor": "#ffffff",
-                                "titleColor": "#ffffff",
-                                "titleFontSize": 22,
-                                "titleFontWeight": 700,
-                                "domainColor": "#444444",
-                                "tickColor": "#444444",
-                                "grid": false,
-                                "labelPadding": 10
-                            }
-                        },
-                        "y": {
-                            "field": "steps",
-                            "type": "quantitative",
-                            "axis": {
-                                "title": "Steps",
-                                "labelFontSize": 18,
-                                "labelColor": "#ffffff",
-                                "titleColor": "#ffffff",
-                                "titleFontSize": 22,
-                                "titleFontWeight": 700,
-                                "domainColor": "#444444",
-                                "tickColor": "#444444",
-                                "gridColor": "#333333",
-                                "gridOpacity": 0.3
-                            }
-                        }
-                    }
-                },
-                {
-                    "mark": {
-                        "type": "line",
-                        "strokeWidth": 4,
-                        "color": "#06b6d4"
-                    },
-                    "encoding": {
-                        "x": {
-                            "field": "month",
-                            "type": "ordinal",
-                            "sort": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                        },
-                        "y": {"field": "steps", "type": "quantitative"}
-                    }
-                },
-                {
-                    "mark": {
-                        "type": "point",
-                        "filled": true,
-                        "size": 120,
-                        "color": "#22d3ee",
-                        "cursor": "pointer"
-                    },
-                    "encoding": {
-                        "x": {
-                            "field": "month",
-                            "type": "ordinal",
-                            "sort": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                        },
-                        "y": {"field": "steps", "type": "quantitative"},
-                        "tooltip": [
-                            {"field": "month", "type": "ordinal", "title": "Month"},
-                            {"field": "steps", "type": "quantitative", "title": "Avg Steps", "format": ","}
-                        ]
-                    }
-                }
-            ]
-        };
-
-        // Enhanced Scatter Plot
-        const scatterPlotSpec = {
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "width": "container",
-            "height": 450,
-            "background": "transparent",
-            "data": {
-                "values": [
-                    {"sleep_hours": 8, "mood_level": 9},
-                    {"sleep_hours": 5, "mood_level": 5},
-                    {"sleep_hours": 7, "mood_level": 8},
-                    {"sleep_hours": 9, "mood_level": 9},
-                    {"sleep_hours": 6.5, "mood_level": 6},
-                    {"sleep_hours": 8.5, "mood_level": 8.5},
-                    {"sleep_hours": 7.5, "mood_level": 7.5},
-                    {"sleep_hours": 5.5, "mood_level": 4},
-                    {"sleep_hours": 9.5, "mood_level": 10},
-                    {"sleep_hours": 6, "mood_level": 6.5},
-                    {"sleep_hours": 8.5, "mood_level": 9.5},
-                    {"sleep_hours": 4, "mood_level": 3},
-                    {"sleep_hours": 4.5, "mood_level": 4.5}
-                ]
-            },
-            "mark": {
-                "type": "circle",
-                "size": 400,
-                "opacity": 0.8,
-                "cursor": "pointer"
-            },
-            "encoding": {
-                "x": {
-                    "field": "sleep_hours",
-                    "type": "quantitative",
-                    "axis": {
-                        "title": "Sleep Hours",
-                        "labelFontSize": 18,
-                        "labelColor": "#ffffff",
-                        "titleColor": "#ffffff",
-                        "titleFontSize": 22,
-                        "titleFontWeight": 700,
-                        "domainColor": "#444444",
-                        "tickColor": "#444444",
-                        "gridColor": "#333333",
-                        "gridOpacity": 0.3,
-                        "labelPadding": 10
-                    },
-                    "scale": {"zero": false}
-                },
-                "y": {
-                    "field": "mood_level",
-                    "type": "quantitative",
-                    "axis": {
-                        "title": "Mood Level",
-                        "labelFontSize": 18,
-                        "labelColor": "#ffffff",
-                        "titleColor": "#ffffff",
-                        "titleFontSize": 22,
-                        "titleFontWeight": 700,
-                        "domainColor": "#444444",
-                        "tickColor": "#444444",
-                        "gridColor": "#333333",
-                        "gridOpacity": 0.3
-                    },
-                    "scale": {"zero": false}
-                },
-                "color": {
-                    "field": "mood_level",
-                    "type": "quantitative",
-                    "scale": {
-                        "range": ["#3b82f6", "#8b5cf6", "#ec4899", "#f472b6"]
-                    },
-                    "legend": {
-                        "title": "Mood Level",
-                        "labelColor": "#ffffff",
-                        "titleColor": "#ffffff",
-                        "labelFontSize": 16,
-                        "titleFontSize": 18
-                    }
-                },
-                "tooltip": [
-                    {"field": "sleep_hours", "type": "quantitative", "title": "Sleep Hours", "format": ".1f"},
-                    {"field": "mood_level", "type": "quantitative", "title": "Mood Level", "format": ".1f"}
-                ]
-            }
-        };
-
-        // Embed visualizations
-        vegaEmbed('#chart1', barChartSpec, {
-            actions: {export: true, source: false, compiled: false, editor: false},
-            theme: 'dark'
-        });
-        vegaEmbed('#chart2', lineChartSpec, {
-            actions: {export: true, source: false, compiled: false, editor: false},
-            theme: 'dark'
-        });
-        vegaEmbed('#chart3', scatterPlotSpec, {
-            actions: {export: true, source: false, compiled: false, editor: false},
-            theme: 'dark'
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
